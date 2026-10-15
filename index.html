@@ -9,7 +9,7 @@
 :root{--bg:#EDF2F6;--cd:#fff;--ink:#12263A;--mut:#6B7C8C;--der:#2F6FDE;--die:#DC4257;--das:#27A06A;--p:#12263A;--ln:#D7E0E8}
 body.dk{--bg:#0D1822;--cd:#16283A;--ink:#EAF1F7;--mut:#8FA3B5;--p:#4A86C5;--ln:#26405A}
 body.cs{--p:#0F8B8D}body.dk.cs{--p:#2BB5B7}
-body{font:16px/1.5 "Segoe UI",Tahoma,system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100dvh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+body{font:16px/1.5 "Segoe UI",Tahoma,system-ui,sans-serif;background:var(--bg);color:var(--ink);padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
 .top{display:flex;align-items:center;gap:8px;padding:12px 16px}
 .lg{flex:1;font-size:20px;font-weight:800;direction:ltr;text-align:start}
 .ch{background:var(--cd);border:1px solid var(--ln);border-radius:20px;padding:4px 12px;font-weight:700;font-size:14px}
@@ -58,6 +58,7 @@ label{font-size:14px;color:var(--mut)}
 <div class="sw"><button id="mg" onclick="mode('g')">عام</button><button id="mc" onclick="mode('c')">🎧 خدمة العملاء</button></div>
 <main id="v"></main>
 <script>
+(function(){const w=innerWidth,m=Math.min(screen.width,screen.height);if(w>m*1.6)document.documentElement.style.zoom=(w/m).toFixed(2)})();
 const URL_='https://dhnxkshblavokipiafsi.supabase.co/functions/v1/gemini-chat';
 const $=s=>document.querySelector(s),R=a=>a[Math.random()*a.length|0];
 // كلمات B1+ : [أرتيكل, كلمة, معنى] (أرتيكل فاضي = فعل/صفة)
@@ -100,7 +101,7 @@ function mode(m){S.mode=m;save();head();home();sync()}
 function say(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';u.rate=.85;speechSynthesis.speak(u)}catch(e){}}
 const back='<button class="gh bk" onclick="home()">→ رجوع</button>';
 const note=()=>{const n=NT?`<p class="res g">${NT}</p>`:'';NT='';return n};
-function home(){const c=S.mode=='c',n=Object.keys(S.ok).filter(k=>S.ok[k]>=3).length,
+function home(){if(!S.prof&&!S.skip){prof();return}const c=S.mode=='c',n=Object.keys(S.ok).filter(k=>S.ok[k]>=3).length,
 T=[['🃏','كلمات B1+',"cards('w')",'der'],['💬','تعبيرات وأمثلة',"cards('x')",'die'],['🎯','لعبة der / die / das','art()','das'],['📚','جرامر','gl()','der'],['🧩','رتّب الجملة','bld()','die'],['🔁','مراجعة المحفوظ',"cards('w',1)",'das'],['📊','إحصائيات','stats()','der']];
 T.push(['👥','الأصدقاء والشات','chat()','das']);T.push(['✨','محتوى جديد بالـ AI','gen()','die']);if(c)T.push(['📞','محاكي المكالمات','sim()','die']);T.push(['🤖',c?'قيّم ردك بالـ AI':'صحّح جملتك بالـ AI','ai()','das']);
 $('#v').innerHTML=note()+'<div class="gr">'+T.map(t=>`<button class="tl ${t[3]}" onclick="${t[2]}"><i>${t[0]}</i>${t[1]}</button>`).join('')+`</div><p class="mut">${S.prof?'👋 '+esc(S.prof.name)+' | ':''}${c?'خدمة العملاء':'ألمانية عامة'} | محفوظ: ${n} 📌</p>`}
@@ -139,7 +140,7 @@ function sa(i){const o=CS.o[i];document.querySelectorAll('.op').forEach(x=>x.dis
 $('#r').innerHTML=`<p class="res ${['r','y','g'][o[1]]}">${o[1]}/2: ${o[2]}</p><button class="bt" onclick="sim()">مكالمة تانية</button>`}
 async function call(b){if(!S.pin)throw new Error('اكتب الرمز السري من ⚙️ الأول');
 const r=await fetch(S.url||URL_,{method:'POST',headers:{'Content-Type':'application/json','x-app-pin':S.pin},body:JSON.stringify(b)});
-const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'خطأ '+r.status);return j}
+const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||(r.status==401?'Supabase رافض الطلب: اقفل Verify JWT للـ Function':'خطأ '+r.status));return j}
 const ask=(prompt,system)=>call({prompt,system}).then(j=>j.text);
 function ai(){CMs=S.mode=='c'?R(CM):'';
 $('#v').innerHTML=back+(CMs?`<div class="fc"><p class="mut" style="margin-top:0">العميل بيقول:</p><div class="w s">${CMs}</div></div>`:'')+`<textarea id="t" dir="ltr" rows="4" placeholder="${CMs?'اكتب ردك بالألمانية...':'اكتب جملة بالألمانية...'}"></textarea><button class="bt" id="go" onclick="go()">${CMs?'قيّم ردي':'صحّح'}</button><div id="r"></div>`}
@@ -160,7 +161,7 @@ r.textContent=(j.cached?'📦 موجود في قاعدة البيانات، من
 var TI,CHF,CHL='',OP=0,SH=null,TUB=0,FR=[],PG='',PF=new URLSearchParams(location.search).get('f');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2400)}
-function prof(){const p=S.prof||{};$('#v').innerHTML=`<div class="fc" style="text-align:start"><b style="font-size:20px">أهلاً! عرّفنا بنفسك 👋</b><label style="display:block;margin-top:10px">الاسم</label><input id="pf" value="${esc(p.name||'')}"><label>النوع</label><div class="row"><button class="bt gh" id="g1" onclick="pg('m')">ذكر</button><button class="bt gh" id="g2" onclick="pg('f')">أنثى</button></div><label style="display:block;margin-top:10px">تاريخ الميلاد</label><input id="pb" type="date" value="${p.birth||''}"><label>الرمز السري (APP_PIN)</label><input id="pp" type="password" value="${esc(S.pin)}"><button class="bt" onclick="ps()">حفظ وابدأ</button><div id="pe"></div></div>`;pg(p.gender||'')}
+function prof(){const p=S.prof||{};$('#v').innerHTML=`<div class="fc" style="text-align:start"><b style="font-size:20px">أهلاً! عرّفنا بنفسك 👋</b><label style="display:block;margin-top:10px">الاسم</label><input id="pf" value="${esc(p.name||'')}"><label>النوع</label><div class="row"><button class="bt gh" id="g1" onclick="pg('m')">ذكر</button><button class="bt gh" id="g2" onclick="pg('f')">أنثى</button></div><label style="display:block;margin-top:10px">تاريخ الميلاد</label><input id="pb" type="date" value="${p.birth||''}"><label>الرمز السري (APP_PIN)</label><input id="pp" type="password" value="${esc(S.pin)}"><button class="bt" onclick="ps()">حفظ وابدأ</button><div id="pe"></div><button class="gh" onclick="S.skip=1;save();home()">تخطّي الآن</button></div>`;pg(p.gender||'')}
 function pg(g){PG=g;['m','f'].forEach((x,i)=>{$('#g'+(i+1)).style.outline=g==x?'3px solid var(--p)':'none'})}
 async function ps(){const n=$('#pf').value.trim(),b=$('#pb').value,p=$('#pp').value.trim(),e=$('#pe');if(!n||!PG||!b||!p){e.className='res y';e.textContent='كمّل كل الخانات';return}
 S.pin=p;e.className='res';e.textContent='بحفظ...';const id=(S.prof&&S.prof.id)||(crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2));

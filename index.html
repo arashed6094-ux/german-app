@@ -50,7 +50,7 @@ textarea,input{width:100%;padding:12px;border-radius:12px;border:1px solid var(-
 .rx{margin-top:4px;font-size:15px}.eb{display:flex;gap:6px;margin-top:6px}
 .eb button{border:0;background:rgba(127,127,127,.25);border-radius:10px;font-size:20px;padding:4px 8px}
 .sh{border-right:4px solid var(--das);padding-right:8px;margin-bottom:4px}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:20px;z-index:9}
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:20px;z-index:9}
 .mdl{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px;z-index:8}.mdl .fc{width:100%;max-width:360px}
 label{font-size:14px;color:var(--mut)}
 </style></head><body>
@@ -84,7 +84,7 @@ const SYC="أنت مدرب خدمة عملاء ألماني. الموظف بير
 let S={xp:0,streak:0,ok:{},bad:{},gr:{},mode:'g',pin:'',url:''},CI,CT,RV,CW,CS,CMs,B,GQ,q=0,NT='';
 try{Object.assign(S,JSON.parse(localStorage.getItem('de')||'{}'))}catch(e){}
 S.ok=S.ok||{};S.bad=S.bad||{};S.gr=S.gr||{};
-S.fz=S.fz||0;S.ai=S.ai||{};for(const m of['g','c','a']){S.ai[m]=S.ai[m]||{};for(const k of['word','expr','grammar','sim'])S.ai[m][k]=S.ai[m][k]||[]}
+S.fz=S.fz||0;S.ts=S.ts||{};S.ai=S.ai||{};for(const m of['g','c','a']){S.ai[m]=S.ai[m]||{};for(const k of['word','expr','grammar','sim'])S.ai[m][k]=S.ai[m][k]||[]}
 const WL=()=>W[S.mode].concat(S.ai[S.mode].word),XL=()=>X[S.mode].concat(S.ai[S.mode].expr),GL=()=>G.concat(S.ai.a.grammar),SL=()=>SM.concat(S.ai.c.sim);
 if(S.dark===undefined)S.dark=matchMedia('(prefers-color-scheme:dark)').matches?1:0;
 const save=()=>{try{localStorage.setItem('de',JSON.stringify(S))}catch(e){}};
@@ -95,7 +95,7 @@ const DY=d=>Math.round((new Date(new Date().toDateString())-new Date(d))/864e5);
 const stk=()=>S.last&&DY(S.last)>1+(S.fz||0)?0:S.streak;
 function xp(n){S.xp+=n;const d=new Date().toDateString();if(S.last!==d){const g=S.last?DY(S.last):1,ms=g-1;
 if(!S.last||(g>1&&(S.fz||0)<ms))S.streak=1;else{if(ms>0){S.fz-=ms;NT='🛡️ الحماية حافظت على سلسلتك!'}S.streak++;if(S.streak%7==0){S.fz=(S.fz||0)+1;NT='🎁 أسبوع كامل! كسبت 🛡️ حماية للسلسلة'}}S.last=d}save();head()}
-function good(k){const c=S.ok[k]=(S.ok[k]||0)+1;xp(5);if(c==3){xp(10);NT='🎉 حفظت «'+k+'»! (3 مرات صح)'}}
+function good(k){const c=S.ok[k]=(S.ok[k]||0)+1;S.ts[k]=Date.now();xp(5);if(c==3){xp(10);NT='🎉 حفظت «'+k+'»! (3 مرات صح)'}}
 function bad(k){S.bad[k]=(S.bad[k]||0)+1;save()}
 function mode(m){S.mode=m;save();head();home();sync()}
 function say(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';u.rate=.85;speechSynthesis.speak(u)}catch(e){}}
@@ -106,16 +106,19 @@ T=[['🃏','كلمات B1+',"cards('w')",'der'],['💬','تعبيرات وأمث
 T.push(['👥','الأصدقاء والشات','chat()','das']);T.push(['✨','محتوى جديد بالـ AI','gen()','die']);if(c)T.push(['📞','محاكي المكالمات','sim()','die']);T.push(['🤖',c?'قيّم ردك بالـ AI':'صحّح جملتك بالـ AI','ai()','das']);
 $('#v').innerHTML=note()+'<div class="gr">'+T.map(t=>`<button class="tl ${t[3]}" onclick="${t[2]}"><i>${t[0]}</i>${t[1]}</button>`).join('')+`</div><p class="mut">${S.prof?'👋 '+esc(S.prof.name)+' | ':''}${c?'خدمة العملاء':'ألمانية عامة'} | محفوظ: ${n} 📌</p>`}
 function pk(L){const w=L.map(i=>1+(S.bad[i.k]||0));let r=Math.random()*w.reduce((a,b)=>a+b),i=0;while((r-=w[i])>0&&i<L.length-1)i++;return L[i]}
-function cards(t,rv){CT=t;RV=rv;const L=rv?IT('w').concat(IT('x')).filter(i=>lr(i.k)):IT(t).filter(i=>!lr(i.k));if(!rv&&L.length<6)topup(t);
-if(!L.length){$('#v').innerHTML=back+note()+`<p class="res">${rv?'لسه مفيش كلمات محفوظة. أي كلمة تجاوبها صح 3 مرات بتتحفظ وتظهر هنا.':'خلصت كل بطاقات القسم! 🎉 راجع المحفوظ من المراجعة.'}</p>`+(rv?'':'<button class="bt" onclick="gen()">✨ جيب محتوى جديد بالـ AI</button>');return}
+const GAP=k=>[0,0,0,1,3,7,14,30][Math.min(S.ok[k]||0,7)]*864e5;
+function cards(t,rv){CT=t;RM=rv;const all=rv?IT('w').concat(IT('x')):IT(t),lrn=all.filter(i=>lr(i.k)),due=lrn.filter(i=>Date.now()-(S.ts[i.k]||0)>GAP(i.k)),nw=all.filter(i=>!lr(i.k));
+RV=!!rv||(due.length>0&&(!nw.length||Math.random()<.2));
+const L=rv?(due.length?due:lrn):(RV?due:nw);if(!rv&&nw.length<6)topup(t);
+if(!L.length){$('#v').innerHTML=back+note()+`<p class="res">${rv?'لسه مفيش كلمات محفوظة. أي كلمة تجاوبها صح 3 مرات بتتحفظ، وبترجعلك للمراجعة بعد يوم ثم 3 أيام ثم أسبوع وهكذا.':'خلصت كل بطاقات القسم دلوقتي! 🎉 المحفوظ هيرجعلك في مواعيده.'}</p>`+(rv?'':'<button class="bt" onclick="gen()">✨ جيب محتوى جديد بالـ AI</button>');return}
 const i=CI=pk(L),d=i.d,x=i.t=='x',c=Math.min(S.ok[i.k]||0,3);CA=x?d[1]:d[2];
 const ds=IT(i.t).map(y=>y.t=='x'?y.d[1]:y.d[2]).filter((v,j,a)=>v!=CA&&a.indexOf(v)==j).sort(()=>Math.random()-.5).slice(0,2);
 CO=ds.concat(CA).sort(()=>Math.random()-.5);
-$('#v').innerHTML=back+note()+`<div class="fc ${x?'':d[0]}"><div class="mut" style="margin-top:0">${rv?'مراجعة':'●'.repeat(c)+'○'.repeat(3-c)}</div><div class="${x?'w s':'w'}">${x?d[0]:(d[0]?`<span class="a ${d[0]}">${d[0]}</span> `:'')+d[1]}</div><button class="gh sp" onclick="say(CI.t=='x'?CI.d[0]:(CI.d[0]+' '+CI.d[1]).trim())">🔊</button></div><p class="mut">اختار المعنى الصح:</p>`+CO.map((o,j)=>`<button class="op" onclick="pc(${j})">${o}</button>`).join('')+'<div id="r"></div>'}
+$('#v').innerHTML=back+note()+`<div class="fc ${x?'':d[0]}"><div class="mut" style="margin-top:0">${RV?'🔁 تذكير':'●'.repeat(c)+'○'.repeat(3-c)}</div><div class="${x?'w s':'w'}">${x?d[0]:(d[0]?`<span class="a ${d[0]}">${d[0]}</span> `:'')+d[1]}</div><button class="gh sp" onclick="say(CI.t=='x'?CI.d[0]:(CI.d[0]+' '+CI.d[1]).trim())">🔊</button></div><p class="mut">اختار المعنى الصح:</p>`+CO.map((o,j)=>`<button class="op" onclick="pc(${j})">${o}</button>`).join('')+'<div id="r"></div>'}
 function pc(j){const k=CI.k,ok=CO[j]==CA,x=CI.t=='x';document.querySelectorAll('.op').forEach((b,n)=>{b.disabled=1;if(CO[n]==CA)b.style.border='3px solid var(--das)';else if(n==j)b.style.border='3px solid var(--die)'});
-if(RV){if(ok)xp(2);else{S.ok[k]=1;save()}}else if(ok)good(k);else bad(k);
+if(RV){if(ok){S.ok[k]=(S.ok[k]||0)+1;S.ts[k]=Date.now();xp(2)}else{S.ok[k]=1;bad(k)}}else if(ok)good(k);else bad(k);
 say(x?CI.d[0]:(CI.d[0]+' '+CI.d[1]).trim());
-$('#r').innerHTML=(ok?'<p class="res g">صح! 🎉</p>':'<p class="res r">الصح: '+CA+'</p>')+(x?`<p class="eg">${CI.d[2]}</p>`:'')+'<button class="gh" onclick="shr(CI.t==\'x\'?\'expr\':\'word\',CI.d)">📤 شارك مع صديق</button><button class="bt" onclick="cards(CT,RV)">التالي</button>'}
+$('#r').innerHTML=(ok?'<p class="res g">صح! 🎉</p>':'<p class="res r">الصح: '+CA+'</p>')+(x?`<p class="eg">${CI.d[2]}</p>`:'')+'<button class="gh" onclick="shr(CI.t==\'x\'?\'expr\':\'word\',CI.d)">📤 شارك مع صديق</button><button class="bt" onclick="cards(CT,RM)">التالي</button>'}
 function art(){const L=WL().filter(d=>d[0]),U=L.filter(d=>!lr(d[1])),d=CW=R(U.length?U:L);
 $('#v').innerHTML=back+note()+`<div class="fc"><div class="mut" style="margin-top:0">صح متتالي: ${q}</div><div class="w">${d[1]}</div><div class="ar">${d[2]}</div></div><div class="row3">`+['der','die','das'].map(a=>`<button class="bt ${a}" onclick="ga(this,'${a}')">${a}</button>`).join('')+'</div>'}
 function ga(b,a){document.querySelectorAll('.row3 button').forEach(x=>x.disabled=1);if(a==CW[0]){q++;good(CW[1]);b.classList.add('ok');say(CW[0]+' '+CW[1])}else{q=0;bad(CW[1]);b.classList.add('no');document.querySelector('.row3 .'+CW[0]).classList.add('ok')}setTimeout(art,1100)}
@@ -146,8 +149,8 @@ function ai(){CMs=S.mode=='c'?R(CM):'';
 $('#v').innerHTML=back+(CMs?`<div class="fc"><p class="mut" style="margin-top:0">العميل بيقول:</p><div class="w s">${CMs}</div></div>`:'')+`<textarea id="t" dir="ltr" rows="4" placeholder="${CMs?'اكتب ردك بالألمانية...':'اكتب جملة بالألمانية...'}"></textarea><button class="bt" id="go" onclick="go()">${CMs?'قيّم ردي':'صحّح'}</button><div id="r"></div>`}
 async function go(){const t=$('#t').value.trim();if(!t)return;const b=$('#go'),r=$('#r');b.disabled=1;r.className='res';r.textContent='بفكر...';
 try{r.textContent=(await ask(t,CMs?SYC+CMs:SYG)).replace(/\*\*/g,'');xp(10)}catch(e){r.textContent='⚠️ '+e.message}b.disabled=0}
-function set(){$('#v').innerHTML=back+`<p class="mut">${S.prof?esc(S.prof.name)+' | '+(S.prof.gender=='f'?'أنثى':'ذكر')+' | '+Math.floor((Date.now()-new Date(S.prof.birth))/315576e5)+' سنة':''}</p><div class="fc" style="text-align:start"><label>الرمز السري (نفس APP_PIN في Supabase)</label><input id="pn" type="password" value="${S.pin}"><label>رابط الـ Function (سيبه كده لو مش هتغيّره)</label><input id="ur" dir="ltr" value="${S.url}" placeholder="${URL_}"><button class="gh" onclick="prof()">👤 تعديل الملف الشخصي</button><button class="gh" onclick="S.dark^=1;save();head()">🌓 داكن / فاتح</button><button class="bt" onclick="S.pin=$('#pn').value.trim();S.url=$('#ur').value.trim();save();home()">حفظ</button></div>`}
-var CO,CA;
+function set(){$('#v').innerHTML=back+`<p class="mut">${S.prof?esc(S.prof.name)+' | '+(S.prof.gender=='f'?'أنثى':'ذكر')+' | '+Math.floor((Date.now()-new Date(S.prof.birth))/315576e5)+' سنة':''}</p><div class="fc" style="text-align:start"><label>الرمز السري (نفس APP_PIN في Supabase)</label><input id="pn" type="password" value="${S.pin}"><label>رابط الـ Function (سيبه كده لو مش هتغيّره)</label><input id="ur" dir="ltr" value="${S.url}" placeholder="${URL_}"><button class="gh" onclick="prof()">👤 تعديل الملف الشخصي</button><button class="gh" onclick="S.dark^=1;save();head()">🌓 داكن / فاتح</button><button class="gh" onclick="dg()">🩺 فحص النظام</button><div id="dgr"></div><button class="bt" onclick="S.pin=$('#pn').value.trim();S.url=$('#ur').value.trim();save();home()">حفظ</button></div>`}
+var CO,CA,RM;
 const KEYS=(k,m)=>k=='word'?W[m].map(d=>d[1]):k=='expr'?X[m].map(d=>d[0]):k=='grammar'?G.map(g=>g.t):SM.map(s=>s.c);
 const KF={word:d=>d[1],expr:d=>d[0],grammar:d=>d.t,sim:d=>d.c},FM={word:d=>(d[0]+' '+d[1]+' = '+d[2]).trim(),expr:d=>d[0]+' = '+d[1],grammar:d=>d.t,sim:d=>d.c};
 function add(k,m,items){const L=S.ai[m][k],h=KEYS(k,m);let n=0;items.forEach(d=>{const x=KF[k](d);if(!L.some(y=>KF[k](y)==x)&&!h.includes(x)){L.push(d);n++}});save();return n}
@@ -173,12 +176,14 @@ try{const j=await call({action:'friends',me:S.prof.id});FR=j.friends;
 $('#v').innerHTML=back+(FR.length?FR.map((f,i)=>`<button class="op" onclick="oc(${i})">👤 ${esc(f.name)}</button>`).join(''):'<p class="mut">لسه مفيش أصدقاء. ابعت الدعوة لزميلك أو اكتب كوده.</p>')+`<div class="fc" style="text-align:start"><label>كودك: <b dir="ltr">${S.prof.code}</b></label><button class="bt" onclick="invt()">📨 ابعت دعوة (رابط البرنامج)</button><label style="display:block;margin-top:14px">أضف صديق بالكود</label><input id="fc2" dir="ltr" placeholder="مثلاً: K7M2QX"><button class="gh" onclick="fa()">إضافة</button><div id="fe"></div></div>`}catch(e){$('#v').innerHTML=back+'<p class="res r">⚠️ '+esc(e.message)+'</p>'}}
 async function invt(){const u=location.origin+location.pathname+'?f='+S.prof.code;try{if(navigator.share)await navigator.share({title:'ألماني',text:'انضم لي في برنامج تعلم الألماني 🇩🇪',url:u});else{await navigator.clipboard.writeText(u);toast('اتنسخ الرابط ✅')}}catch(e){}}
 async function fa(){const c=$('#fc2').value.trim(),e=$('#fe');if(!c)return;try{const j=await call({action:'friend_add',me:S.prof.id,code:c});e.className='res g';e.textContent='🤝 اتضاف '+j.friend.name;setTimeout(chat,900)}catch(x){e.className='res r';e.textContent='⚠️ '+x.message}}
-function oc(i){CHF=FR[i];OP=0;CHL='';$('#v').innerHTML=`<button class="gh bk" onclick="chat()">→ رجوع</button> <b>${esc(CHF.name)}</b><div id="ml" class="ml"></div><div class="row"><input id="mi" placeholder="اكتب رسالة..." style="margin:0"><button class="bt" style="flex:0 0 80px;margin:0" onclick="sm()">إرسال</button></div>`;cp();clearInterval(TI);TI=setInterval(cp,4000)}
-async function cp(){if(!$('#ml')){clearInterval(TI);return}try{const j=await call({action:'msgs',me:S.prof.id,other:CHF.id}),h=JSON.stringify(j.msgs)+OP;if(h==CHL||!$('#ml'))return;CHL=h;const ml=$('#ml'),end=ml.scrollHeight-ml.scrollTop-ml.clientHeight<80;ml.innerHTML=j.msgs.map(mh).join('')||'<p class="mut">ابدأ المحادثة 👋</p>';if(end)ml.scrollTop=ml.scrollHeight}catch(e){}}
+function oc(i){CHF=FR[i];OP=0;CHL='';$('#v').innerHTML=`<button class="gh bk" onclick="chat()">→ رجوع</button> <b>${esc(CHF.name)}</b><div id="ml" class="ml"></div><div id="ce"></div><div class="row"><input id="mi" placeholder="اكتب رسالة..." style="margin:0" onkeydown="if(event.key==='Enter')sm()"><button class="bt" style="flex:0 0 80px;margin:0" onclick="sm()">إرسال</button></div>`;cp();clearInterval(TI);TI=setInterval(cp,4000)}
+async function cp(){if(!$('#ml')){clearInterval(TI);return}const c=$('#ce');try{const j=await call({action:'msgs',me:S.prof.id,other:CHF.id}),h=JSON.stringify(j.msgs)+OP;if(c&&c.textContent.startsWith('⚠️ مش قادر')){c.textContent='';c.className=''}if(h==CHL||!$('#ml'))return;CHL=h;const ml=$('#ml'),end=ml.scrollHeight-ml.scrollTop-ml.clientHeight<80;ml.innerHTML=j.msgs.map(mh).join('')||'<p class="mut">ابدأ المحادثة 👋</p>';if(end)ml.scrollTop=ml.scrollHeight}catch(e){if(c&&!c.textContent){c.className='res r';c.textContent='⚠️ مش قادر أحمّل الرسائل: '+e.message+' (جرّب ⚙️ ثم 🩺 فحص النظام)'}}}
 function mh(m){const me=m.sender==S.prof.id,cn={};Object.values(m.reactions||{}).forEach(e=>cn[e]=(cn[e]||0)+1);const ks=Object.keys(cn);
 return `<div class="m ${me?'me':''}" onclick="OP=OP==${m.id}?0:${m.id};CHL='';cp()">${m.shared?shw(m.shared):''}${m.body?`<div>${esc(m.body)}</div>`:''}${ks.length?'<div class="rx">'+ks.map(e=>e+(cn[e]>1?' '+cn[e]:'')).join('  ')+'</div>':''}${OP==m.id?'<div class="eb">'+['👍','❤️','😂','🎉','😮'].map(e=>`<button onclick="event.stopPropagation();rc(${m.id},'${e}')">${e}</button>`).join('')+'</div>':''}</div>`}
 async function rc(id,e){OP=0;try{await call({action:'react',me:S.prof.id,id,emoji:e})}catch(x){toast('⚠️ '+x.message)}CHL='';cp()}
-async function sm(){const i=$('#mi'),t=i.value.trim();if(!t)return;i.value='';try{await call({action:'send',me:S.prof.id,other:CHF.id,body:t})}catch(e){i.value=t;toast('⚠️ '+e.message);return}CHL='';cp()}
+async function sm(){const i=$('#mi'),t=i.value.trim(),e=$('#ce');if(!t)return;i.value='';e.className='';e.textContent='';
+const ml=$('#ml');ml.insertAdjacentHTML('beforeend',`<div class="m me" style="opacity:.6">${esc(t)} ⏳</div>`);ml.scrollTop=ml.scrollHeight;
+try{await call({action:'send',me:S.prof.id,other:CHF.id,body:t})}catch(x){i.value=t;e.className='res r';e.textContent='⚠️ الرسالة ماتبعتتش: '+x.message+' (جرّب ⚙️ ثم 🩺 فحص النظام)';CHL='';cp();return}CHL='';cp()}
 function shw(s){const d=s.data,k=s.kind;let h;
 if(k=='word')h=`<b dir="ltr">${esc((d[0]+' '+d[1]).trim())}</b><div>${esc(d[2])}</div>`;
 else if(k=='expr')h=`<b dir="ltr">${esc(d[0])}</b><div>${esc(d[1])}</div><div dir="ltr">${esc(d[2])}</div>`;
@@ -190,6 +195,7 @@ async function shr(kind,d){if(!S.prof){prof();return}SH={kind,data:d};
 try{const j=await call({action:'friends',me:S.prof.id});FR=j.friends;if(!FR.length){toast('ضيف صديق الأول من 👥');return}if(FR.length==1)return sd(0);
 const m=document.createElement('div');m.className='mdl';m.id='mdl';m.innerHTML=`<div class="fc">ابعت لمين؟${FR.map((f,i)=>`<button class="op" onclick="sd(${i})">${esc(f.name)}</button>`).join('')}<button class="gh" onclick="$('#mdl').remove()">إلغاء</button></div>`;document.body.appendChild(m)}catch(e){toast('⚠️ '+e.message)}}
 async function sd(i){const m=$('#mdl');if(m)m.remove();try{await call({action:'send',me:S.prof.id,other:FR[i].id,shared:SH,body:''});toast('📤 اتبعت لـ '+FR[i].name)}catch(e){toast('⚠️ '+e.message)}}
+async function dg(){const r=$('#dgr');r.className='res';r.textContent='بفحص...';try{r.textContent=(await call({action:'diag'})).report}catch(e){r.textContent='⚠️ '+e.message}}
 head();S.prof?home():prof();sync();pend();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script></body></html>
